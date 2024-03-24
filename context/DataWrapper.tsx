@@ -33,7 +33,7 @@ export default function DataWrapper({children}:{children:React.ReactElement}){
     const usersArrRef = useRef<any>([])
     const [chats,setChats] = useState<any>([])
     const chatsArrRef = useRef<any>([])
-    const [rmId,setRmId] = useState('919834275238')
+    const [rmId,setRmId] = useState('')
 
     const baseUrl = 'https://myflask-app-dot-amazing-hub-414413.el.r.appspot.com'
     
@@ -49,6 +49,7 @@ export default function DataWrapper({children}:{children:React.ReactElement}){
                 body:JSON.stringify({
                     list_of_connected_users:rmId
                 }),
+                //@ts-ignore
                 cache:'default',}).then(res=>{
                    //console.log("res from audio server",res)
                    return res.json()
@@ -76,6 +77,7 @@ export default function DataWrapper({children}:{children:React.ReactElement}){
                 body:JSON.stringify({
                     rm_id:rmId
                 }),
+                //@ts-ignore
                 cache:'default',}).then(res=>{
                    //console.log("res from audio server",res)
                    return res.json()
@@ -90,7 +92,11 @@ export default function DataWrapper({children}:{children:React.ReactElement}){
         
     }
 
+    
     useEffect(()=>{
+        if(rmId==='')
+        return ;
+
         console.log('i m useEffect')
         let url = `${baseUrl}/rm_user_mapping`
         
@@ -119,13 +125,15 @@ export default function DataWrapper({children}:{children:React.ReactElement}){
         })
         
         
-    },[])
+    },[rmId])
 
     // useEffect(()=>{
     //     console.log(users)
     // },[users])
 
     useEffect(()=>{
+        if(rmId ==='')
+        return ;
         //chk for new messages 
         let url = `${baseUrl}/frequent_trigger`
         let tempChats = []
@@ -135,7 +143,7 @@ export default function DataWrapper({children}:{children:React.ReactElement}){
             if(result===null)
             return ;
             //find first element using mobno 
-          console.log('new msg result',result)
+          //console.log('new msg result',result)
             //console.log(Object.keys(result))
 
             //let tempUsersRef =  [...usersArrRef.current]
@@ -182,7 +190,7 @@ export default function DataWrapper({children}:{children:React.ReactElement}){
             })
 
 
-           // console.log('usersArrRef',usersArrRef.current,chatsArrRef.current)
+            console.log('usersArrRef',chatsArrRef.current)
             setUsers((p:any)=>[...usersArrRef.current])
             setChats((p:any)=>[...chatsArrRef.current])
             // result.map((e,i)=>{
@@ -194,19 +202,21 @@ export default function DataWrapper({children}:{children:React.ReactElement}){
         
         let intervalId=setInterval(()=>{
             getNotifications()
-        },5000)
+        },3000)
         return ()=>{
             clearInterval(intervalId)
         }
 
-    },[])
+    },[rmId])
 
     const values = {
-        users,setUsers,
+        users,setUsers,usersArrRef,
         chats,setChats,
-        baseUrl,chatsFormat,chatsArrRef,rmId,usersArrRef
+        baseUrl,chatsFormat,chatsArrRef,rmId,setRmId,
+        getUsersList,userFormat
     }
     return (
+        //@ts-ignore
         <Data.Provider value={values}>
             {children}
         </Data.Provider>

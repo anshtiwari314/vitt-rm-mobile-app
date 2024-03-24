@@ -4,11 +4,11 @@ import { ScrollView } from 'react-native-gesture-handler'
 import { useData } from '../context/DataWrapper'
 
 
-export default function UsersScreen({navigation}:any){
+export default function UsersScreen({navigation,route}:any){
 
     //@ts-ignore
-    const {users,setChats} = useData()
-    
+    const {users,setUsers,setChats,baseUrl,getUsersList,userFormat,usersArrRef,setRmId} = useData()
+    const {userId} = route.params
     let arr = [
         {
             id:1,
@@ -83,6 +83,13 @@ export default function UsersScreen({navigation}:any){
         //{"clientid": "83538", "mobno": "43976346724", "name": "bibuthi"}
         
     ]
+
+
+    useEffect(()=>{
+        setRmId(userId)
+    },[])
+    
+
 
     return(
         <View style={{flex:1,backgroundColor:'#53d2fc'}}>

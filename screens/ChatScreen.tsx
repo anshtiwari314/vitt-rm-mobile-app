@@ -1,5 +1,5 @@
 import React, { useEffect, useState,useRef } from 'react'
-import { ScrollView, ImageBackground } from 'react-native'
+import { ScrollView, ImageBackground,Keyboard } from 'react-native'
 import {Button, Image, Text, TextInput, TouchableOpacity, View} from 'react-native'
 import { useData } from '../context/DataWrapper'
 
@@ -25,6 +25,7 @@ export default function ChatScreen({navigation,route}:any){
                     rm_id:rmId,
                     user_num:mobile
                 }),
+                //@ts-ignore
                 cache:'default',}).then(res=>{
                    //console.log("res from audio server",res)
                    return res.json()
@@ -40,9 +41,7 @@ export default function ChatScreen({navigation,route}:any){
 
     useEffect(()=>{
         navigation.setOptions({ title: name })
-       // console.log('use-eff',name,)
-       
-
+       // console.log('use-eff',name)
     },[])
 
     useEffect(()=>{
@@ -94,6 +93,7 @@ export default function ChatScreen({navigation,route}:any){
         //set scroll to end 
         scrollViewRef.current.scrollToEnd({animated:true})
     },[])
+
     function handleMsg(){
         let url = `${baseUrl}/rm_message_handler`
         
@@ -130,7 +130,8 @@ export default function ChatScreen({navigation,route}:any){
         
         //tempChat.time =e.split(' ')[1]
         //tempChat.date = e.split(' ')[0]
-        setChats(p=>[...p,tempChat])
+        chatsArrRef.current = [...chatsArrRef.current,tempChat]
+        setChats([...chatsArrRef.current])
         setMsg('')
     }
 
@@ -155,7 +156,7 @@ export default function ChatScreen({navigation,route}:any){
             }).then((result)=>{
               
               //setMsg((prev)=>[...prev,...result])
-              console.log('disconnected user',result)
+             // console.log('disconnected user',result)
              //setUsers(result.message)
              //resolve(result.message) 
 
@@ -170,7 +171,7 @@ export default function ChatScreen({navigation,route}:any){
     function handleScrollEffect(width:number,height:number){
         //scrollViewRef.current.to `     q-;l
     
-        console.log("handle scroll effect ",height,scrollPosition?.y)
+        //console.log("handle scroll effect ",height,scrollPosition?.y)
         
         //if scroll position is within 30 then it should scroll down to new msg 
         //otherwise stays there 
@@ -183,23 +184,21 @@ export default function ChatScreen({navigation,route}:any){
 
     useEffect(()=>{
         let d = new Date()
-        console.log("only date effect",d.getDay(),d.getTime(),d.getMonth())
+      //  console.log("only date effect",d.getDay(),d.getTime(),d.getMonth())
     },[])
     
     //style={{backgroundColor:'#69d9ff'}}
     return (
-        <View >
+        <View style={{flex:1}}>
 
             <ImageBackground
                // style={{}}
                 source={{uri:'https://i.pinimg.com/736x/2a/33/4c/2a334ccc45f940ef779d5090d7e9a35e.jpg'}}
-
+                style={{flex:1}}
             >
             <View
                 style={{
-                    // flex:1,
-                    height:'85%',
-                    
+                    flex:Keyboard.isVisible()? 0.73:0.85
                 }}
             >
                 <ScrollView
@@ -256,7 +255,12 @@ export default function ChatScreen({navigation,route}:any){
                 
                 
             </View>
-            <View style={{marginVertical:5,alignItems:"center"}}>
+            <View style={{
+                flex:Keyboard.isVisible()? 0.12 :0.07,
+                marginVertical:5,alignItems:"center",
+                // borderColor:'red',
+                // borderWidth:1,
+                }}>
                 <View style={{width:"90%",alignItems:"center"}}>
                 <Button 
                     onPress={disconnectUser} 
@@ -268,11 +272,16 @@ export default function ChatScreen({navigation,route}:any){
             </View>
             
             
-            <View style={{height:'8%',backgroundColor:'black',flexDirection:'row',alignItems:'center'}}>
+            <View style={{
+                flex:Keyboard.isVisible()? 0.15:0.08,
+                backgroundColor:'black',flexDirection:'row',alignItems:'center',
+                // borderColor:'red',
+                // borderWidth:1,
+                }}>
                 <TextInput
                     style={{
                         width:'85%',
-                        height:50,
+                        height:'100%',
                         // borderWidth:1,
                         // borderColor:'red',
                         color:'white',
@@ -292,6 +301,7 @@ export default function ChatScreen({navigation,route}:any){
                         // borderColor:'red',
                         // borderWidth:1,
                         width:'15%',
+                        height:'100%',
                         alignItems:'center',
                         justifyContent:'center'
 
@@ -299,7 +309,7 @@ export default function ChatScreen({navigation,route}:any){
                     onPress={handleMsg}
                 >
                     <Image
-                        style={{width:'80%',height:'80%',backgroundColor:'black'}}
+                        style={{width:'100%',height:'100%',backgroundColor:'black'}}
                         source={{uri:'https://cdn-icons-png.flaticon.com/512/3814/3814305.png'}}
                         
                     />
