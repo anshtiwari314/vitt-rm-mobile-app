@@ -124,9 +124,12 @@ export default function UsersScreen({navigation,route}:any){
             <ScrollView
                 
             >
-                {users.map((e:any,i:number)=>(
-
-            <TouchableOpacity 
+                {
+            
+            
+            users.map((e:any,i:number)=>{
+                console.log('users',e)
+            return <TouchableOpacity 
                 key={i}
                 onPress={()=>{setChats([]),navigation.navigate('Chats',{mobile:e.mobile,name:e.name,clientId:e.clientId} )}}
                 // style={{zIndex:2}}
@@ -161,7 +164,7 @@ export default function UsersScreen({navigation,route}:any){
                         }} >
                         <View style={{flexDirection:'row',justifyContent:'space-between'}}>
                             <Text style={{color:'black',fontSize:16,fontWeight:'bold'}}>{e.name}</Text>
-                            <Text style={{color:'black'}}>{e.lastMsgDate.day}/{e.lastMsgDate.month}/{e.lastMsgDate.year}</Text>
+                            <Text style={{color:'black'}}>{e.lastMsgDate?.day}/{e.lastMsgDate?.month}/{e.lastMsgDate?.year}</Text>
                         </View>
                         <View style={{flexDirection:'row',justifyContent:'space-between',marginVertical:2}}>
                             <Text style={{color:'black'}}>
@@ -187,7 +190,7 @@ export default function UsersScreen({navigation,route}:any){
                     </View>
             </View>
             </TouchableOpacity>
-                ))}
+})}
             </ScrollView>
 
             

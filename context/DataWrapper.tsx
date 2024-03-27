@@ -108,11 +108,12 @@ export default function DataWrapper({children}:{children:React.ReactElement}){
            console.log('get all users',result)
            
             result?.map((e:any,i:number)=>{
-                let tempUser = {...userFormat}
+                let tempUser = Object.assign({}, userFormat)
+                //console.log("tempUSER",tempUser,userFormat)
                 tempUser.name = e.name 
-                tempUser.clientId = e.clientid 
-                tempUser.mobile = e.mobno
-                tempUser.lastMsg = e.last_msg.message
+                tempUser.clientId = e.clientid  
+                tempUser.mobile = e.mobno   
+                tempUser.lastMsg = e.last_msg.message   
                 tempUser.lastMsgDate.day =e.last_msg.time_id.split(' ')[0].split('').slice(6,8).join('')
                 tempUser.lastMsgDate.month =e.last_msg.time_id.split(' ')[0].split('').slice(4,6).join('')
                 tempUser.lastMsgDate.year =e.last_msg.time_id.split(' ')[0].split('').slice(0,4).join('')
@@ -148,24 +149,45 @@ export default function DataWrapper({children}:{children:React.ReactElement}){
 
             //let tempUsersRef =  [...usersArrRef.current]
             let keys = Object.keys(result)
-            //console.log('chk for new msg',result)
+            console.log('chk for new msg',result)
             keys.map((mob:string,i:number)=>{
                 let tempNewMsg =Object.keys(result[mob])
-                // find this user in users 
+                // find this user in users
+                let count = 0
+                
                 // updating unreadMsg
                 usersArrRef.current.map((e:any,i:number)=>{
                     if(e.mobile === mob){
+                        count++;
                         e.unreadMsgCount =e.unreadMsgCount+tempNewMsg.length
                         
                     }
                 })
-                 
-                // if chatsArrRef has values 
+                 //if count =0 it means this user is new 
+                if(count===0){
+                    let tempUser = {...userFormat}
+                    let d = new Date()
+
+                    console.log("tempUser",tempUser)
+                    tempUser.clientId ='abcdefg'
+                    tempUser.lastMsg = ''
+                    tempUser.mobile = mob
+                    tempUser.unreadMsgCount = tempNewMsg.length
+                    tempUser.name = mob 
+                    tempUser.lastMsgDate={
+                        year:`${d.getFullYear()}`,
+                        day:`${d.getDate()}`,
+                        month:`${d.getMonth()+1}`
+                    }
+                    usersArrRef.current = ([...usersArrRef.current,tempUser])
+                }
+
+                // if chatsArrRef has values
                 // it means user has once visited second screen or (it is in 2nd screen)
                 //console.log(mob,chatsArrRef.current)
+
                 if (chatsArrRef.current.length >0){
-                    // 
-                    //console.log('chatsArrRef',chatsArrRef.current[0],'mob',mob)
+
                     if(chatsArrRef.current[0].mobile ===mob){
 
                         let date_times= Object.keys(result[mob])
@@ -184,7 +206,6 @@ export default function DataWrapper({children}:{children:React.ReactElement}){
                         })
                                  
                     }
-
                 }
                 
             })

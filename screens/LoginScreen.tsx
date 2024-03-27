@@ -4,8 +4,8 @@ import { useData } from '../context/DataWrapper'
 
 export default function LoginScreen({navigation}:any){
 
-    const [userName,setUserName] = useState('')
-    const [password,setPassword] = useState('')
+    const [userName,setUserName] = useState('918368751774')
+    const [password,setPassword] = useState('test')
    
     
     function handleSubmit(){
