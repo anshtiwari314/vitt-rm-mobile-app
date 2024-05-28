@@ -1,11 +1,12 @@
 import React, { useEffect,useRef } from 'react'
 import {View,Text, Image,ImageBackground, TouchableOpacity} from 'react-native'
-import { ScrollView } from 'react-native-gesture-handler'
+import { ScrollView, TextInput } from 'react-native-gesture-handler'
 import { useData } from '../context/DataWrapper'
 
 
 export default function UsersScreen({navigation,route}:any){
 
+    const [searchString,setSearchString] = React.useState('')
     //@ts-ignore
     const {users,setUsers,setChats,baseUrl,getUsersList,userFormat,usersArrRef,setRmId} = useData()
     const {userId} = route.params
@@ -86,10 +87,32 @@ export default function UsersScreen({navigation,route}:any){
 
 
     useEffect(()=>{
+        //console.log(userId)
         setRmId(userId)
     },[])
     
-
+    useEffect(()=>{
+        //  usersArrRef not change at the time of searching
+        if(searchString.length===0){
+            setUsers(usersArrRef.current)
+        }
+        else if( !isNaN(parseInt(searchString)) ){
+            let tempArr = usersArrRef.current.filter((e:any)=>{
+                //console.log('e',e.name.toLowerCase().includes(searchString.toLowerCase()),searchString.toLowerCase())
+                return e.mobile.toLowerCase().includes(searchString.toLowerCase())
+            })
+            //console.log('tempArr',tempArr)
+            setUsers(tempArr)
+        }
+        else{
+            let tempArr = usersArrRef.current.filter((e:any)=>{
+                console.log('e',e.name.toLowerCase().includes(searchString.toLowerCase()),searchString.toLowerCase())
+                return e.name.toLowerCase().includes(searchString.toLowerCase())
+            })
+            //console.log('tempArr',tempArr)
+            setUsers(tempArr)
+        }
+    },[searchString])
 
     return(
         <View style={{flex:1,backgroundColor:'#53d2fc'}}>
@@ -99,28 +122,49 @@ export default function UsersScreen({navigation,route}:any){
                 source={{uri:'https://i.pinimg.com/736x/2a/33/4c/2a334ccc45f940ef779d5090d7e9a35e.jpg'}}
 
             >
-
-            <View style={{
-                flexDirection:'row',
-                justifyContent:'space-between',
-                backgroundColor:'#69d9ff',
-                
-                alignItems:'center',
-                paddingVertical:8,
-                
-            }}>
-                <View style={{marginLeft:5}}>
-                    <Text style={{color:'white',fontSize:18,fontWeight:'bold'}}>Vitt RM App</Text>
-                    <Text style={{color:'white',fontSize:12}}>(AI Powered Sales)</Text>
+            <View style={{backgroundColor:'#69d9ff'}}>
+                <View style={{
+                    flexDirection:'row',
+                    justifyContent:'space-between',
+                    
+                    alignItems:'center',
+                    paddingVertical:8,
+                    
+                }}>
+                    <View style={{marginLeft:5}}>
+                        <Text style={{color:'white',fontSize:18,fontWeight:'bold'}}>Vitt RM App</Text>
+                        <Text style={{color:'white',fontSize:12}}>(AI Powered Sales)</Text>
+                    </View>
+                    <View style={{marginRight:10}}>
+                        <Image
+                            style={{height:60,width:40}}
+                            source={{uri:'https://vitt.ai/static/media/Robo.6aa2a6d1c0b68aa0cec2.png'}}
+                        />
+                    </View>
                 </View>
-                <View style={{marginRight:10}}>
-                    <Image
-                        style={{height:60,width:40}}
-                        source={{uri:'https://vitt.ai/static/media/Robo.6aa2a6d1c0b68aa0cec2.png'}}
-                    />
+                <View style={{alignItems:'center',marginVertical:2}}>
+                    <View style={{width:'90%',backgroundColor:'#ffffff',flexDirection:'row',alignItems:'center',borderRadius:10,paddingHorizontal:10}}>
+                        <Image
+                            style={{height:20,width:20,marginRight:5}} 
+                            source={{uri:'https://static-00.iconduck.com/assets.00/search-icon-2048x2048-4r9dtbbw.png'}}/>
+                        <TextInput 
+                            placeholder='Search users' 
+                            placeholderTextColor={'black'}
+                            onChangeText={(e)=>setSearchString(e)}
+                            value={searchString}
+                            style={{
+                                //borderWidth:1,
+                                borderColor:'red',
+                                width:'80%',
+                                fontSize:15,
+                                color:'black'
+                            }}
+                            
+                            />
+                    </View>
                 </View>
+                
             </View>
-
             <ScrollView
                 
             >
@@ -128,7 +172,7 @@ export default function UsersScreen({navigation,route}:any){
             
             
             users.map((e:any,i:number)=>{
-                console.log('users',e)
+               // console.log('users',e)
             return <TouchableOpacity 
                 key={i}
                 onPress={()=>{setChats([]),navigation.navigate('Chats',{mobile:e.mobile,name:e.name,clientId:e.clientId} )}}

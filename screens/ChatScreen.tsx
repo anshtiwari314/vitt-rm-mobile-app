@@ -233,7 +233,7 @@ export default function ChatScreen({navigation,route}:any){
                                     width:'auto',
                                     maxWidth:'80%',
                                     //height:20,
-                                    backgroundColor:'#173dfc',
+                                    backgroundColor:e.sender==='bot'?'#FF0085':'#173dfc',
                                     marginLeft:5,
                                     marginVertical:5,
                                     paddingVertical:8,

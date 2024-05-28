@@ -6,7 +6,7 @@ export default function LoginScreen({navigation}:any){
 
     const [userName,setUserName] = useState('918368751774')
     const [password,setPassword] = useState('test')
-   
+    
     
     function handleSubmit(){
         let url = `https://qhpv9mvz1h.execute-api.ap-south-1.amazonaws.com/prod/check-abwmtest-login`

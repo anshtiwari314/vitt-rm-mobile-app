@@ -1,4 +1,6 @@
 import React,{createContext, useContext, useEffect, useRef, useState} from 'react'
+import { usersData } from './MOCK_DATA'
+import { io } from "socket.io-client";
 
 const Data = createContext('')
 
@@ -34,9 +36,11 @@ export default function DataWrapper({children}:{children:React.ReactElement}){
     const [chats,setChats] = useState<any>([])
     const chatsArrRef = useRef<any>([])
     const [rmId,setRmId] = useState('')
+    const [socket,setSocket] = useState<any>(null)
 
-    const baseUrl = 'https://myflask-app-dot-amazing-hub-414413.el.r.appspot.com'
-    
+    //const baseUrl = 'https://myflask-app-dot-amazing-hub-414413.el.r.appspot.com'
+    const baseUrl = 'https://abwm.vitt.ai'
+
     function getUsersList(url:string){
         return new Promise((resolve,reject)=>{
             fetch(url,{
@@ -84,7 +88,7 @@ export default function DataWrapper({children}:{children:React.ReactElement}){
                 }).then((result)=>{
                   
                   //setMsg((prev)=>[...prev,...result])
-                  //console.log(result)
+                  console.log('result',result)
                  //setUsers(result.message)
                  resolve(result) 
                 })
@@ -93,6 +97,8 @@ export default function DataWrapper({children}:{children:React.ReactElement}){
     }
 
     
+
+   
     useEffect(()=>{
         if(rmId==='')
         return ;
@@ -105,7 +111,7 @@ export default function DataWrapper({children}:{children:React.ReactElement}){
         
         
         getUsersList(url).then((result:any)=>{
-           console.log('get all users',result)
+           //console.log('get all users',result)
            
             result?.map((e:any,i:number)=>{
                 let tempUser = Object.assign({}, userFormat)
@@ -124,13 +130,34 @@ export default function DataWrapper({children}:{children:React.ReactElement}){
             usersArrRef.current = [...tempArr]
             setUsers(tempArr)
         })
-        
-        
+        // usersData.map((e,i)=>{
+        //     let tempUser = Object.assign({}, userFormat)
+        //     console.log("tempUSER",e.name)
+        //     tempUser.name = e.name 
+        //     tempUser.clientId = e.clientId  
+        //     tempUser.mobile = e.mobile   
+        //     tempUser.lastMsg = e.lastMsg
+        //     tempUser.lastMsgDate.day =e.lastMsgDate.day
+        //     tempUser.lastMsgDate.month =e.lastMsgDate.month
+        //     tempUser.lastMsgDate.year =e.lastMsgDate.year
+        //     tempUser.unreadMsgCount = e.unreadMsgCount
+        //     tempArr.push(tempUser) 
+        // })
+        // usersArrRef.current = [...tempArr]
+        // setUsers(tempArr)
     },[rmId])
 
+    
     // useEffect(()=>{
     //     console.log(users)
     // },[users])
+
+    function getLastMsg(obj:any){
+        let keys = Object.keys(obj)
+        let values = Object.values(obj)
+        //@ts-ignore
+        return values[keys.length-1].msg
+    }
 
     useEffect(()=>{
         if(rmId ==='')
@@ -141,10 +168,11 @@ export default function DataWrapper({children}:{children:React.ReactElement}){
         //@ts-ignore
         function getNotifications(){
         checkForNewMsg(url).then((result:any)=>{
+            console.log('new msg result',result)
             if(result===null)
             return ;
             //find first element using mobno 
-          //console.log('new msg result',result)
+            //console.log('new msg result',result)
             //console.log(Object.keys(result))
 
             //let tempUsersRef =  [...usersArrRef.current]
@@ -152,25 +180,62 @@ export default function DataWrapper({children}:{children:React.ReactElement}){
             console.log('chk for new msg',result)
             keys.map((mob:string,i:number)=>{
                 let tempNewMsg =Object.keys(result[mob])
-                // find this user in users
-                let count = 0
+
                 
-                // updating unreadMsg
-                usersArrRef.current.map((e:any,i:number)=>{
-                    if(e.mobile === mob){
-                        count++;
-                        e.unreadMsgCount =e.unreadMsgCount+tempNewMsg.length
+                 // if chatsArrRef has values
+                // it means user has once visited second screen or (it is in 2nd screen)
+                if (chatsArrRef.current.length >0){
+
+                    if(chatsArrRef.current[0].mobile ===mob){
                         
+                        let date_times= Object.keys(result[mob])
+
+                        date_times.forEach((date_time)=>{
+                            let tempChat = {...chatsFormat}
+                            //mob1,mob2,mob3
+                            console.log('date_time_obj',result[mob][date_time].msg)
+
+                            tempChat.date = date_time.split(' ')[0]
+                            tempChat.time = date_time.split(' ')[1]
+                            tempChat.mobile = mob 
+                            tempChat.msg  = result[mob][date_time].msg
+                            tempChat.sender = 'user'
+
+                          
+                            chatsArrRef.current = [...chatsArrRef.current,tempChat]
+                        })
+                                 
+                    }
+                }
+
+                let tempLastMsgOfUser = {mob:mob,msg:getLastMsg(result[mob])}                
+                //console.log('tempLastMsgOfUser',tempLastMsgOfUser)
+                // find this user in users
+                let tempUser = null
+                // updating unreadMsg
+                usersArrRef.current =usersArrRef.current.filter((e:any,i:number)=>{
+                    //if user found not add it to new Array
+                    if(e.mobile === mob){
+                       
+                        e.unreadMsgCount =e.unreadMsgCount+tempNewMsg.length
+                        e.lastMsg = tempLastMsgOfUser.msg
+                        tempUser = e
+                        return false
+                    }
+                    else{
+                        return true
                     }
                 })
-                 //if count =0 it means this user is new 
-                if(count===0){
-                    let tempUser = {...userFormat}
+
+                
+                 //if tempUser =null it means this user is new 
+                if(tempUser===null){
+                    tempUser = {...userFormat}
                     let d = new Date()
 
                     console.log("tempUser",tempUser)
                     tempUser.clientId ='abcdefg'
-                    tempUser.lastMsg = ''
+                    tempUser.lastMsg = '(new user)'
                     tempUser.mobile = mob
                     tempUser.unreadMsgCount = tempNewMsg.length
                     tempUser.name = mob 
@@ -179,41 +244,21 @@ export default function DataWrapper({children}:{children:React.ReactElement}){
                         day:`${d.getDate()}`,
                         month:`${d.getMonth()+1}`
                     }
-                    usersArrRef.current = ([...usersArrRef.current,tempUser])
+                    
                 }
-
-                // if chatsArrRef has values
-                // it means user has once visited second screen or (it is in 2nd screen)
+                usersArrRef.current = ([tempUser,...usersArrRef.current])
+               
                 //console.log(mob,chatsArrRef.current)
 
-                if (chatsArrRef.current.length >0){
-
-                    if(chatsArrRef.current[0].mobile ===mob){
-
-                        let date_times= Object.keys(result[mob])
-
-                        date_times.forEach((date_time)=>{
-                            let tempChat = {...chatsFormat}
-                            //mob1,mob2,mob3
-    
-                            tempChat.date = date_time.split(' ')[0]
-                            tempChat.time = date_time.split(' ')[1]
-                            tempChat.mobile = mob 
-                            tempChat.msg  = result[mob][date_time].msg
-                            tempChat.sender = 'user'
-
-                            chatsArrRef.current = [...chatsArrRef.current,tempChat]
-                        })
-                                 
-                    }
-                }
                 
+                
+            setUsers((p:any)=>[...usersArrRef.current])
+            setChats((p:any)=>[...chatsArrRef.current])
             })
 
 
-            console.log('usersArrRef',chatsArrRef.current)
-            setUsers((p:any)=>[...usersArrRef.current])
-            setChats((p:any)=>[...chatsArrRef.current])
+            //console.log('usersArrRef',chatsArrRef.current)
+            
             // result.map((e,i)=>{
             //     console.log(e,'hello')
             // })
@@ -222,13 +267,17 @@ export default function DataWrapper({children}:{children:React.ReactElement}){
     }
         
         let intervalId=setInterval(()=>{
-            getNotifications()
+           // getNotifications()
         },3000)
         return ()=>{
             clearInterval(intervalId)
         }
 
     },[rmId])
+
+    // useEffect(()=>{
+    //     console.log(usersData)
+    // },[])
 
     const values = {
         users,setUsers,usersArrRef,
