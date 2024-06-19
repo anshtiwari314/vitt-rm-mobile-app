@@ -1,14 +1,18 @@
-import {useState} from 'react'
+import {useState,useEffect} from 'react'
 import {TextInput, View,Image, TouchableOpacity, Button} from 'react-native'
 import { useData } from '../context/DataWrapper'
 
 export default function LoginScreen({navigation}:any){
 
-    const [userName,setUserName] = useState('918368751774')
+    const [userName,setUserName] = useState('918708213235')
     const [password,setPassword] = useState('test')
+    const {setRmId} = useData()
     
     
     function handleSubmit(){
+        console.log(userName,password)
+        //918708213235
+        //navigation.navigate('Users',{userId:'918368751774'})
         let url = `https://qhpv9mvz1h.execute-api.ap-south-1.amazonaws.com/prod/check-abwmtest-login`
         fetch(url,{
             method:'POST',
@@ -27,13 +31,15 @@ export default function LoginScreen({navigation}:any){
                return res.json()
             }).then((result)=>{
               
-            // console.log('login result',result,result['success '])
+            console.log('login result',result,result['success '])
              if(result['success ']===true){
+                setRmId(userName)
                 navigation.navigate('Users',{userId:userName})
              }
             })
     }
 
+    
     return (
         <View style={{backgroundColor:'white',flex:1,justifyContent:'center',alignItems:'center'}}>
             <View style={{width:'80%',alignItems:'center',

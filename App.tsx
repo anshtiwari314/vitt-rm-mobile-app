@@ -17,6 +17,7 @@ export default function App(){
     <DataWrapper>
     <NavigationContainer>
         <Stack.Navigator>
+            
             <Stack.Screen
                 name='Login'
                 component={LoginScreen}

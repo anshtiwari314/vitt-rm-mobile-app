@@ -86,10 +86,7 @@ export default function UsersScreen({navigation,route}:any){
     ]
 
 
-    useEffect(()=>{
-        //console.log(userId)
-        setRmId(userId)
-    },[])
+    
     
     useEffect(()=>{
         //  usersArrRef not change at the time of searching
@@ -207,7 +204,7 @@ export default function UsersScreen({navigation,route}:any){
                         // borderWidth:1
                         }} >
                         <View style={{flexDirection:'row',justifyContent:'space-between'}}>
-                            <Text style={{color:'black',fontSize:16,fontWeight:'bold'}}>{e.name}</Text>
+                            <Text style={{color:'black',fontSize:16,fontWeight:'bold'}}>{e.mobile}</Text>
                             <Text style={{color:'black'}}>{e.lastMsgDate?.day}/{e.lastMsgDate?.month}/{e.lastMsgDate?.year}</Text>
                         </View>
                         <View style={{flexDirection:'row',justifyContent:'space-between',marginVertical:2}}>

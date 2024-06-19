@@ -7,7 +7,7 @@ export default function ChatScreen({navigation,route}:any){
 
     const [msg,setMsg] = useState('')
     //@ts-ignore
-    const {chats,setChats,baseUrl,chatsFormat,usersArrRef, chatsArrRef,rmId,users,setUsers} = useData()
+    const {chats,setChats,baseUrl,chatsFormat,usersArrRef, chatsArrRef,rmId,users,setUsers,socket} = useData()
     const {mobile,name,clientId} = route.params 
     const scrollViewRef = useRef<any>(null);
     const [scrollPosition,setScrollPosition] = useState(null)
@@ -60,34 +60,77 @@ export default function ChatScreen({navigation,route}:any){
     },[chats])
 
     useEffect(()=>{
-        //setChats()
-        let url = `${baseUrl}/usr_chat_history`
-        //@ts-ignore
-        let tempArr =[]
-        getAllChats(url,mobile).then((result:any)=>{
-            //console.log('i am result',result)
-            let keys=Object.keys(result)
-            //console.log('i am mobile from chat screen',mobile)
-            keys.map((e)=>{
-                let tempChat = {...chatsFormat}
-                tempChat.sender = result[e].conv_initiated
-                tempChat.msg = result[e].msg 
-                tempChat.mobile = result[e].user_num
-                //console.log('from inside chtscreen',e.split(' '))
-                tempChat.time =e.split(' ')[1]
-                tempChat.date = e.split(' ')[0]
-
-                tempArr.push(tempChat)
-                //console.log(result[e])
-             
-            })
-            //@ts-ignore
-            chatsArrRef.current = [...tempArr]
-            //@ts-ignore
-            setChats(tempArr)
+        if(socket===null || rmId===null)
+        return ;
+       // let rmId = '918708213235'
+        console.log("before user chat history",{rm_id:rmId,user_num:mobile})
+        
+        socket.emit('user_chat_history_fromclient',{rm_id:rmId,user_num:mobile})
+        //socket.emit('history_fromclient',tempData)
+        function userChatHostoryFromServer(result:any){
+            console.log("usr chat history from server",result)
+            let tempArr =[]
+                //console.log('i am result',result)
+                let keys=Object.keys(result)
+                //console.log('i am mobile from chat screen',mobile)
+                keys.map((e)=>{
+                    let tempChat = {...chatsFormat}
+                    tempChat.sender = result[e].conv_initiated
+                    tempChat.msg = result[e].msg 
+                    tempChat.mobile = result[e].user_num
+                    //console.log('from inside chtscreen',e.split(' '))
+                    tempChat.time =e.split(' ')[1]
+                    tempChat.date = e.split(' ')[0]
+    
+                    tempArr.push(tempChat)
+                    //console.log(result[e])
+                 
+                })
+                console.log('tempArr',tempArr)
+                //@ts-ignore
+                chatsArrRef.current = [...tempArr]
+                //@ts-ignore
+                setChats(tempArr)
+                
             
-        })
-    },[])
+        }
+        
+        socket.on('user_chat_history_fromserver',userChatHostoryFromServer)
+        
+        return ()=>{
+            socket.off('user_chat_history_fromserver',userChatHostoryFromServer)
+        }
+    },[rmId,socket])
+
+    // useEffect(()=>{
+    //     //setChats()
+    //     let url = `${baseUrl}/usr_chat_history`
+    //     //@ts-ignore
+    //     let tempArr =[]
+    //     getAllChats(url,mobile).then((result:any)=>{
+    //         //console.log('i am result',result)
+    //         let keys=Object.keys(result)
+    //         //console.log('i am mobile from chat screen',mobile)
+    //         keys.map((e)=>{
+    //             let tempChat = {...chatsFormat}
+    //             tempChat.sender = result[e].conv_initiated
+    //             tempChat.msg = result[e].msg 
+    //             tempChat.mobile = result[e].user_num
+    //             //console.log('from inside chtscreen',e.split(' '))
+    //             tempChat.time =e.split(' ')[1]
+    //             tempChat.date = e.split(' ')[0]
+
+    //             tempArr.push(tempChat)
+    //             //console.log(result[e])
+             
+    //         })
+    //         //@ts-ignore
+    //         chatsArrRef.current = [...tempArr]
+    //         //@ts-ignore
+    //         setChats(tempArr)
+            
+    //     })
+    // },[])
 
     useEffect (()=>{
         //set scroll to end 
@@ -97,31 +140,32 @@ export default function ChatScreen({navigation,route}:any){
     function handleMsg(){
         let url = `${baseUrl}/rm_message_handler`
         
-        fetch(url,{
-            method:'POST',
-            headers:{
-               'Accept':'application.json',
-               'Content-Type':'application/json'
-            },
+        // fetch(url,{
+        //     method:'POST',
+        //     headers:{
+        //        'Accept':'application.json',
+        //        'Content-Type':'application/json'
+        //     },
     
-            body:JSON.stringify({
-                rm_id:rmId,
-                agent_response:msg,
-                user_num:mobile
-            }),
-            //@ts-ignore
-            cache:'default',}).then(res=>{
-               //console.log("res from audio server",res)
-               return res.json()
-            }).then((result)=>{
+        //     body:JSON.stringify({
+        //         rm_id:rmId,
+        //         agent_response:msg,
+        //         user_num:mobile
+        //     }),
+        //     //@ts-ignore
+        //     cache:'default',}).then(res=>{
+        //        //console.log("res from audio server",res)
+        //        return res.json()
+        //     }).then((result)=>{
               
-              //setMsg((prev)=>[...prev,...result])
-              //console.log('handle msg',result)
-             //setUsers(result.message)
-             //resolve(result.message) 
+        //       //setMsg((prev)=>[...prev,...result])
+        //       //console.log('handle msg',result)
+        //      //setUsers(result.message)
+        //      //resolve(result.message) 
 
-            })
+        //     })
         
+        socket.emit('rm_message_fromclient',{rm_id:rmId,agent_response:msg,user_num:mobile})
         let tempChat = {...chatsFormat}
         
         tempChat.sender = 'rm'
@@ -138,29 +182,31 @@ export default function ChatScreen({navigation,route}:any){
     function disconnectUser(){
         let url = `${baseUrl}/disconnect_user`
         
-        fetch(url,{
-            method:'POST',
-            headers:{
-               'Accept':'application.json',
-               'Content-Type':'application/json'
-            },
+        // fetch(url,{
+        //     method:'POST',
+        //     headers:{
+        //        'Accept':'application.json',
+        //        'Content-Type':'application/json'
+        //     },
     
-            body:JSON.stringify({
-                user_num: mobile,  
-                status: false
-            }),
-            //@ts-ignore
-            cache:'default',}).then(res=>{
-               //console.log("res from audio server",res)
-               return res.json()
-            }).then((result)=>{
+        //     body:JSON.stringify({
+        //         user_num: mobile,  
+        //         status: false
+        //     }),
+        //     //@ts-ignore
+        //     cache:'default',}).then(res=>{
+        //        //console.log("res from audio server",res)
+        //        return res.json()
+        //     }).then((result)=>{
               
-              //setMsg((prev)=>[...prev,...result])
-             // console.log('disconnected user',result)
-             //setUsers(result.message)
-             //resolve(result.message) 
+        //       //setMsg((prev)=>[...prev,...result])
+        //      // console.log('disconnected user',result)
+        //      //setUsers(result.message)
+        //      //resolve(result.message) 
 
-            })
+        //     })
+        //let rmId = '918708213235'
+        socket.emit('disconnect_user_fromclient',{user_num: mobile,status: false,rm_num:rmId})
     }
 
     function getScrollPosition(event:any){
@@ -306,7 +352,7 @@ export default function ChatScreen({navigation,route}:any){
                         justifyContent:'center'
 
                     }}
-                    onPress={handleMsg}
+                    onPress={()=>handleMsg()}
                 >
                     <Image
                         style={{width:'100%',height:'100%',backgroundColor:'black'}}
