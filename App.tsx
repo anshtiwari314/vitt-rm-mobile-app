@@ -1,6 +1,5 @@
 
-import React from 'react';
-
+import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import 'react-native-gesture-handler';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -9,10 +8,15 @@ import UsersScreen from './screens/UsersScreen'
 import DataWrapper from './context/DataWrapper';
 import LoginScreen from './screens/LoginScreen';
 
+
 const Stack = createStackNavigator()
 
 export default function App(){
 
+  // useEffect(()=>{
+  //   console.log("i am app",PushNotification)
+  // },[])
+ 
   return(
     <DataWrapper>
     <NavigationContainer>

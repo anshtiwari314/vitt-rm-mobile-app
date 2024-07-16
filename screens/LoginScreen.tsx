@@ -1,14 +1,51 @@
 import {useState,useEffect} from 'react'
-import {TextInput, View,Image, TouchableOpacity, Button} from 'react-native'
+import {TextInput, View,Image, TouchableOpacity, Button,ToastAndroid,PermissionsAndroid} from 'react-native'
 import { useData } from '../context/DataWrapper'
+import PushNotification from 'react-native-push-notification'
 
 export default function LoginScreen({navigation}:any){
 
-    const [userName,setUserName] = useState('918708213235')
-    const [password,setPassword] = useState('test')
+    const rmId = '918708213235'
+    const pass = 'test'
+    const [userName,setUserName] = useState(rmId)
+    const [password,setPassword] = useState(pass)
     const {setRmId} = useData()
     
     
+    useEffect(()=>{
+       // console.log("i am ",PushNotification)
+    },[])
+
+    const requestNotificationsPermissions = async () => {
+        try {
+        const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
+        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+            console.log('You will get Notifications');
+
+        } else {
+            console.log('notifications permission denied');
+            ToastAndroid.show('Notification Permission denied', ToastAndroid.LONG)
+        }
+        } catch (err) {
+        console.warn(err);
+        }
+    };
+
+    function handleNotification(){
+        PushNotification.checkPermissions((permissions) => {
+        if(permissions.alert===false){
+            requestNotificationsPermissions()
+        }else{
+            console.log('notifications allowed');
+        }
+        });
+    }
+
+    useEffect(()=>{
+        handleNotification();
+    },[])
+
+
     function handleSubmit(){
         console.log(userName,password)
         //918708213235
