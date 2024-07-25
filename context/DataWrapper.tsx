@@ -3,6 +3,7 @@ import PushNotification from 'react-native-push-notification';
 import {AppState} from 'react-native'
 import { usersData } from '../Test/MOCK_DATA'
 import { io } from "socket.io-client";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Data = createContext('')
 
@@ -37,11 +38,13 @@ export default function DataWrapper({children}:{children:React.ReactElement}){
     const usersArrRef = useRef<any>([])
     const [chats,setChats] = useState<any>([])
     const chatsArrRef = useRef<any>([])
-    const [rmId,setRmId] = useState('')
+    const [rmId,setRmId] = useState(null)
     const [socket,setSocket] = useState<any>(null)
     const isConnectedFirstTime = useRef<any>(true)
     const appStateRef = useRef<any>(AppState.currentState)
     const [appStateVisible,setAppStateVisible] = useState<any>(appStateRef.current)
+    const [userName,setUserName] = useState(null)
+    const [password,setPassword] = useState(null)
 
     //const baseUrl = 'https://myflask-app-dot-amazing-hub-414413.el.r.appspot.com'
     const baseUrl = 'https://abwm.vitt.ai'
@@ -173,7 +176,7 @@ export default function DataWrapper({children}:{children:React.ReactElement}){
     // },[])
 
     useEffect(()=>{
-        if(rmId==='')
+        if(rmId===null || rmId==='')
         return ;
         let awsUrl = 'https://f4zoadtc05.execute-api.ap-south-1.amazonaws.com/prod/rm-socket-backend/'
         let vittUrl = 'https://abwmrmchatapp.vitt.ai'
@@ -194,8 +197,26 @@ export default function DataWrapper({children}:{children:React.ReactElement}){
         })
     },[])
 
+    async function chkUserSession(){
+        let data =await AsyncStorage.getItem("rmId")
+        if(data !==null){
+            setTimeout(()=>{
+                setRmId(data)
+            },1000)
+            
+           // navigation.navigate('Users',{userId:userName})
+            //console.log("async",data)
+            
+        }else{
+            setRmId('');
+        }
+    }
     useEffect(()=>{
-        if(socket===null || rmId==='')
+        chkUserSession()    
+    },[])
+
+    useEffect(()=>{
+        if(socket===null || rmId===null || rmId==='')
         return ;
 
         console.log('appstate',appStateVisible)
@@ -203,9 +224,11 @@ export default function DataWrapper({children}:{children:React.ReactElement}){
         //showNotification2({mob:'8368751774',name:'anuj',message:appStateVisible})
     },[appStateVisible,socket,rmId])
     
+    
+
     useEffect(()=>{
         
-        if(socket===null || rmId==='')
+        if(socket===null || rmId===null || rmId==='')
         return ;
        // let rmId = '918708213235'
         function connect() {
@@ -584,7 +607,9 @@ export default function DataWrapper({children}:{children:React.ReactElement}){
         users,setUsers,usersArrRef,
         chats,setChats,
         baseUrl,chatsFormat,chatsArrRef,rmId,setRmId,
-        getUsersList,userFormat,socket
+        getUsersList,userFormat,socket,
+       // userName,setUserName,
+        //password,setPassword
     }
     return (
         //@ts-ignore

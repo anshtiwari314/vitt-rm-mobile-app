@@ -9,7 +9,7 @@ export default function UsersScreen({navigation,route}:any){
     const [searchString,setSearchString] = React.useState('')
     //@ts-ignore
     const {users,setUsers,setChats,baseUrl,getUsersList,userFormat,usersArrRef,setRmId} = useData()
-    const {userId} = route.params
+    //const {userId} = route.params
     let arr = [
         {
             id:1,
